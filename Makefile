@@ -26,4 +26,3 @@ web:
 ## desktop: Start desktop app
 desktop:
 	$(DX) serve --platform desktop
-
