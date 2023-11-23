@@ -5,11 +5,6 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[features]
-default = ["web", "desktop"]
-web = ["dep:dioxus-web"]
-desktop = ["dep:dioxus-desktop"]
-
 [dependencies]
 dioxus = "0.4.0"
 dioxus-logger = "0.4.1"
@@ -17,7 +12,7 @@ log = "0.4.20"
 reqwest = "0.11.22"
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
-dioxus-desktop = { version = "0.4.0", optional = true }
+dioxus-desktop = { version = "0.4.0" }
 
 [target.'cfg(target_family = "wasm")'.dependencies]
-dioxus-web = { version = "0.4.0", optional = true }
+dioxus-web = { version = "0.4.0" }

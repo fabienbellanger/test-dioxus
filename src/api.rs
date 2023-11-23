@@ -1,14 +1,15 @@
+use dioxus::html::input;
 // #![allow(non_snake_case)]
 use dioxus::prelude::*;
 
 const BUTTON_CLASS: &str = "px-6 py-2 text-blue-100 bg-blue-500 hover:bg-blue-700 rounded shadow shadow-blue-500/50";
 
-async fn test_api() -> Result<String, reqwest::Error> {
+async fn test_api(name: &str) -> Result<String, reqwest::Error> {
+    dbg!(name);
     let client = reqwest::Client::new();
     client
-        .get("https://api.github.com/repos/tokio-rs/axum/releases/latest")
+        .get(format!("https://pokeapi.co/api/v2/pokemon/{name}"))
         .header("User-Agent", "Dioxus test")
-        .basic_auth("fabienbellanger", Some("eeb45ce7b16798a036ef502b14cc9b8e0931487b"))
         .send()
         .await
         .unwrap()
@@ -17,16 +18,18 @@ async fn test_api() -> Result<String, reqwest::Error> {
 }
 
 pub fn Api(cx: Scope) -> Element {
-    let release_response = use_state(cx, || String::new());
-    let get_release = move |_| {
+    let api_response = use_state(cx, || String::new());
+    let pokemon_name = use_state(cx, || "pikachu".to_string());
+    let get_pokemon = move |_| {
         cx.spawn({
-            let release_response = release_response.to_owned();
+            let api_response = api_response.to_owned();
+            let pokemon_name = pokemon_name.clone();
 
             async move {
-                let response = test_api().await;
+                let response = test_api(&pokemon_name).await;
                 match response {
-                    Ok(response) => release_response.set(response),
-                    Err(err) => release_response.set(err.to_string()),
+                    Ok(response) => api_response.set(response),
+                    Err(err) => api_response.set(err.to_string()),
                 }
             }
         });
@@ -36,30 +39,34 @@ pub fn Api(cx: Scope) -> Element {
             class: "container mx-auto mt-3",
             h1 {
                 class: "text-4xl mb-4",
-                "Test Github API"
+                "Test Pokemon API"
+            }
+            input {
+                class: "border",
+                value: "{pokemon_name}",
+                oninput: move |evt| pokemon_name.set(evt.value.clone()),
             }
             button {
                 class: BUTTON_CLASS,
-                onclick: get_release,
-                "Get release info",
+                onclick: get_pokemon,
+                "Get Pokemon info",
             }
             div {
-                "{release_response}",
+                "{api_response}",
             }
-            ApiResult(cx)
         }
     })
 }
 
 fn ApiResult(cx: Scope) -> Element {
-    let release = use_future(cx, (), |_| test_api());
-    cx.render(match release.value() {
+    let pokemon = use_future(cx, (), |_| test_api("pikachu"));
+    cx.render(match pokemon.value() {
         Some(Ok(response)) => rsx! {
             div {
                 "Response: {response}"
             }
         },
-        Some(Err(_)) => rsx! { div { "Loading release failed" } },
+        Some(Err(_)) => rsx! { div { "Loading Pokemon failed" } },
         None => rsx! { div { "Loading..." } },
     })
 }
