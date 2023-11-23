@@ -1,4 +1,3 @@
-use dioxus::html::input;
 // #![allow(non_snake_case)]
 use dioxus::prelude::*;
 
@@ -18,7 +17,7 @@ async fn test_api(name: &str) -> Result<String, reqwest::Error> {
 }
 
 pub fn Api(cx: Scope) -> Element {
-    let api_response = use_state(cx, || String::new());
+    let api_response = use_state(cx, String::new);
     let pokemon_name = use_state(cx, || "pikachu".to_string());
     let get_pokemon = move |_| {
         cx.spawn({
@@ -54,6 +53,7 @@ pub fn Api(cx: Scope) -> Element {
             div {
                 "{api_response}",
             }
+            ApiResult(cx),
         }
     })
 }
